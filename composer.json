@@ -1,0 +1,12 @@
+{
+    "name": "bdtech-solutions/concrete-dto",
+    "description": "A lib to handle DTOs",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "BdtechSolutions\\ConcreteDto\\": "src/"
+        }
+    },
+    "require": {}
+}
