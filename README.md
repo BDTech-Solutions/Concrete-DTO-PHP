@@ -1,0 +1,249 @@
+<div align="center">
+
+# Concrete DTO
+
+A small, explicit PHP Data Transfer Object library that keeps data predictable and readable.
+
+Learn it in minutes, keep it in your toolbox for years.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PHP Version](https://img.shields.io/badge/PHP-8.1%2B-blue)](https://www.php.net/)
+
+[Installation](#installation) • [Quick Start](#quick-start) • [API Reference](#api-reference)
+
+</div>
+
+---
+
+## Why Concrete DTO?
+
+- **Tiny API** focused on constructor-first DTOs
+- **Clear import/export helpers** for arrays, JSON, and custom converters
+- **Immutability helpers** to prevent sneaky mutations
+- **Framework-agnostic** and dependency-light
+
+## Installation
+
+```bash
+composer require bdtech-solutions/concrete-dto
+```
+
+Concrete DTO requires PHP 8.1+ and works with any framework or plain PHP codebase.
+
+## Quick Start
+
+### Define a DTO
+
+```php
+<?php
+
+use BdtechSolutions\ConcreteDto\DataTransferObject;
+
+final class UserDTO extends DataTransferObject
+{
+    public function __construct(
+        public readonly string $name,
+        public readonly string $email,
+    ) {}
+}
+```
+
+### Import data
+
+```php
+// From array
+$user = UserDTO::fromArray([
+    'name' => 'Daniel Alvarez',
+    'email' => 'alvarez@alvarez.com',
+]);
+
+// From JSON
+$user = UserDTO::fromJSON('{"name":"Daniel Alvarez","email":"alvarez@alvarez.com"}');
+
+// From custom object
+use BdtechSolutions\ConcreteDto\Contracts\DTOFrom;
+
+final class UserRequestToDTO implements DTOFrom
+{
+    public static function handle(mixed $data): mixed
+    {
+        return new UserDTO(
+            name: $data->fullName,
+            email: $data->contact,
+        );
+    }
+}
+
+$request = new UserRequest('Daniel Alvarez', 'alvarez@alvarez.com');
+$user = UserDTO::from(UserRequestToDTO::class, $request);
+```
+
+### Export data
+
+```php
+// To array
+$data = $user->toArray();
+// ['name' => 'Daniel Alvarez', 'email' => 'alvarez@alvarez.com']
+
+// To JSON
+$json = $user->toJson();
+// {"name":"Daniel Alvarez","email":"alvarez@alvarez.com"}
+
+// To custom object
+use BdtechSolutions\ConcreteDto\Contracts\DTOTo;
+
+final class UserDTOToModel implements DTOTo
+{
+    public static function handle(mixed $dto): mixed
+    {
+        return new UserModel(name: $dto->name, email: $dto->email);
+    }
+}
+
+$model = $user->to(UserDTOToModel::class);
+
+// Filter fields
+$publicData = $user->except(['email']);
+// ['name' => 'Daniel Alvarez']
+```
+
+### Immutability
+
+```php
+// Clone with updates
+$updated = $user->cloneWith(['email' => 'new@example.com']);
+// Original $user remains unchanged
+```
+
+### Validation
+
+Override the static `validate()` method to add custom validation logic. Validation runs automatically when using `fromArray()`, `fromJSON()`, or `cloneWith()` (since `cloneWith()` is built on top of `fromArray()`).
+
+For validation on direct instantiation with `new`, call `self::validate($this->toArray())` in your constructor.
+
+```php
+final class UserDTO extends DataTransferObject
+{
+    public function __construct(
+        public readonly string $name,
+        public readonly string $email,
+    ) {
+        self::validate($this->toArray()); // Enable validation on direct instantiation
+    }
+
+    public static function validate(array $data): void
+    {
+        if (!filter_var($data['email'] ?? '', FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('Invalid email format');
+        }
+
+        if (strlen($data['name'] ?? '') < 2) {
+            throw new InvalidArgumentException('Name too short');
+        }
+    }
+}
+
+// Validation runs automatically
+$user = UserDTO::fromArray(['name' => 'Daniel', 'email' => 'invalid']);
+// Throws InvalidArgumentException
+
+$user = new UserDTO('A', 'invalid@email');
+// Also throws InvalidArgumentException because validate is called in constructor
+```
+
+## API Reference
+
+### Importing Methods
+
+| Method | Purpose |
+|--------|---------|
+| `fromArray(array $data): static` | Create DTO from associative array |
+| `fromJSON(string $json): static` | Create DTO from JSON string |
+| `from(DTOFrom\|string $conversor, mixed $dataToConvert): static` | Create DTO using custom converter |
+
+### Exporting Methods
+
+| Method | Purpose |
+|--------|---------|
+| `toArray(): array` | Export DTO as associative array |
+| `toJson(): string` | Export DTO as JSON string |
+| `to(DTOTo\|string $conversor): mixed` | Export DTO using custom converter |
+
+### Immutability Methods
+
+| Method | Purpose |
+|--------|---------|
+| `cloneWith(array $fields): static` | Clone with field overrides |
+| `except(array $keys): array` | Get array excluding specified fields |
+
+### Validation
+
+| Method | Purpose |
+|--------|---------|
+| `validate(array $data): void` | Override to add custom validation logic before DTO creation |
+
+## Real-World Examples
+
+### HTTP API Response
+
+```php
+Route::get('/user/{id}', function (Request $request) {
+    $user = User::find($request->id);
+    return response()->json($user->toArray());
+});
+```
+
+### Queue Job
+
+```php
+dispatch(new SendEmailJob($user->toJson()));
+
+class SendEmailJob
+{
+    public function handle()
+    {
+        $user = UserDTO::fromJSON($this->userData);
+        Mail::to($user->email)->send(new WelcomeEmail($user));
+    }
+}
+```
+
+### Domain Model Conversion
+
+```php
+// Map DTO to Eloquent model for persistence
+$userModel = $userDTO->to(UserDTOToModel::class);
+$userModel->save();
+```
+
+### Filtering Sensitive Data
+
+```php
+// Remove email before caching user data
+$cacheData = $user->except(['email']);
+Cache::put("user.{$user->name}", $cacheData);
+```
+
+## Testing
+
+```bash
+composer test
+```
+
+Runs tests with Pest PHP.
+
+## License
+
+This library is open-sourced software licensed under the [MIT license](LICENSE).
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+<div align="center">
+
+**[⬆ back to top](#concrete-dto)**
+
+</div>
