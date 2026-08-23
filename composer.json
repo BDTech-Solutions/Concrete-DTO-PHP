@@ -1,12 +1,24 @@
 {
-    "name": "bdtech-solutions/concrete-dto",
-    "description": "A lib to handle DTOs",
-    "type": "library",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "BdtechSolutions\\ConcreteDto\\": "src/"
-        }
-    },
-    "require": {}
+  "name": "bdtech-solutions/concrete-dto",
+  "description": "A lib to handle DTOs",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "BdtechSolutions\\ConcreteDto\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "require-dev": {
+    "pestphp/pest": "^5.1"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
 }
