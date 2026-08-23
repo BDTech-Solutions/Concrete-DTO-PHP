@@ -1,5 +1,7 @@
 <div align="center">
-<img src="logo.png" alt="ConcreteDTO Logo" width="120" height="150">
+
+<img src="logo.png" alt="ConcreteDTO Logo" width="180">
+
 # Concrete DTO
 
 A small, explicit PHP Data Transfer Object library that keeps data predictable and readable.
