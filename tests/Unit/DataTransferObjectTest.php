@@ -20,11 +20,17 @@ it('can init a data transfer object', function () {
   expect($this->userData->name)->toBe($this->userData->name);
 });
 
-it('can convert DTO data to an array', function () {
+it('can convert DTO data to array', function () {
   // convert to array
   $DTOasArray = $this->userData->toArray();
   // verify if is an array
   expect($DTOasArray)->toBeArray();
   // verify data integrity
   expect($DTOasArray['name'])->toBe('Daniels 🤗');
+});
+
+it('can convert DTO data to json', function () {
+  $DTOasJson = $this->userData->toJson();
+  expect($DTOasJson)->toBe('{"name":"Daniels \ud83e\udd17"}');
+  var_dump($DTOasJson);
 });

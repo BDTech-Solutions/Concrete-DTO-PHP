@@ -12,4 +12,13 @@ abstract class DataTransferObject
   {
     return get_object_vars($this);
   }
+
+  /**
+   * Returns the data of DTO as json
+   * @return string
+   */
+  public function toJson(): string
+  {
+    return json_encode($this->toArray());
+  }
 }
